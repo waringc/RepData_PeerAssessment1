@@ -1,19 +1,12 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 ##Background
 This is is the first assignment for the [Coursera Reproducible Research](https://www.coursera.org/learn/reproducible-research) course.
 
-```{r global_options, echo=FALSE}
-##Hide global settings
-knitr::opts_chunk$set(echo=TRUE, options(scipen=999, digits=2),message=FALSE,  warning=FALSE)
-```
+
 
 ## Loading and preprocessing the data
-```{r loadData}
+
+```r
 library(lubridate)
 library(ggplot2)
 ##Read in data
@@ -24,7 +17,8 @@ df$date<-ymd(df$date)
 
 
 ## What is mean total number of steps taken per day?
-```{r meanSteps}
+
+```r
 ##calculate steps by each day
 steps<-aggregate(df$steps, by=list(date=df$date), FUN=sum)
 
@@ -34,20 +28,23 @@ steps<-steps[complete.cases(steps),]
 ##calculate mean steps per day
 meanDailySteps<-mean(steps$x)
 medianDailySteps<-median(steps$x)
-
 ```
 
-**The mean daily steps per day is: `r meanDailySteps` and the median is: `r medianDailySteps`.**
+**The mean daily steps per day is: 10766.19 and the median is: 10765.**
 
 A histogram of daily steps is:
-```{r meanStepsPlot,}
+
+```r
 ##Create plot of steps per day
 ggplot(steps, aes(x))+geom_histogram(binwidth = 2000)+xlab("Total daily steps")+ ggtitle("Frequency of total number of steps taken per day")
 ```
 
+![](PA1_template_files/figure-html/meanStepsPlot-1.png)<!-- -->
+
 
 ## What is the average daily activity pattern?
-```{r dailyPattern}
+
+```r
 ##calculate mean steps by each interval
 intervalSteps<-aggregate(df$steps, by=list(interval=df$interval), FUN=mean, na.rm=TRUE)
 
@@ -56,21 +53,26 @@ maxMeanSteps=intervalSteps[which.max(intervalSteps$x),1]
 ```
 A time series plot of interval number vs average number of steps:
 
-```{r dailyPatternPlot}
+
+```r
 ggplot(intervalSteps, aes(interval, x)) + geom_line()+ylab("Mean Steps") + ggtitle("Interval vs Mean Number of Steps") +geom_vline(aes(xintercept = as.numeric(maxMeanSteps), color="Max. Interval"))+labs(color="")
 ```
 
-**The interval with the highest mean number of steps is: `r maxMeanSteps` as indicated with the vertical line in the plot.**
+![](PA1_template_files/figure-html/dailyPatternPlot-1.png)<!-- -->
+
+**The interval with the highest mean number of steps is: 835 as indicated with the vertical line in the plot.**
 
 ## Imputing missing values
-```{r incompleteCases}
+
+```r
 ##calculate number of incomplete cases
 incompleteCases<- sum(!complete.cases(df))
 ```
 
-**There are `r incompleteCases` incomplete cases in the database.  We will impute missing intervals by assigning to them the mean number of steps for that interval.**
+**There are 2304 incomplete cases in the database.  We will impute missing intervals by assigning to them the mean number of steps for that interval.**
 
-```{r impute}
+
+```r
 ##If cases is incomplete replace missing step count with the mean for that interval
 imputedf<-df
 
@@ -86,20 +88,23 @@ imputeSteps<-aggregate(imputedf$steps, by=list(date=imputedf$date), FUN=sum)
 
 imputeStepsMean<-mean(imputeSteps$x)
 imputeStepsMedian<-median(imputeSteps$x)
-
 ```
 A histogram of total daily number of steps after imputing:
 
 
-```{r imputePlot}
+
+```r
 ggplot(imputeSteps, aes(x))+geom_histogram(binwidth = 2000)+xlab("Total daily steps")+ ggtitle("Frequency of total number of steps taken per day")
 ```
 
-**The mean daily steps per day after imputing is: `r imputeStepsMean` and the median is: `r imputeStepsMedian`. 
+![](PA1_template_files/figure-html/imputePlot-1.png)<!-- -->
+
+**The mean daily steps per day after imputing is: 10766.19 and the median is: 10766.19. 
 The imputing method has left the mean the same from the first part of the assignment and increased the median to be equal to the mean.**
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r activitydifference}
+
+```r
 ##Add factor variable to dataset
 weekend=c("Saturday", "Sunday")
 imputedf$day<-(weekdays(imputedf$date))
@@ -112,17 +117,16 @@ weekdayImputeDF<-subset(imputedf, day=="weekday")
 weekendImputeDF<<-aggregate(weekendImputeDF$steps, by=list(interval=weekendImputeDF$interval), FUN=mean)
 
 weekdayImputeDF<<-aggregate(weekdayImputeDF$steps, by=list(interval=weekdayImputeDF$interval), FUN=mean)
-
-
-
 ```
 A plot of the imputed data showing the difference in mean steps per interval for weekdays vs the weekend:
 
-```{r activitydifferencePlot, fig.height=8}
 
+```r
 par(mfrow=c(2,1))
 plot(weekendImputeDF$interval, weekendImputeDF$x, type="l", main="Mean steps per interval- weekend", xlab="Interval", ylab="Mean Steps", col="blue")
 plot(weekdayImputeDF$interval, weekdayImputeDF$x, type="l", main="Mean steps per interval- weekdays", xlab="Interval", ylab="Mean Steps", col="red") 
 ```
+
+![](PA1_template_files/figure-html/activitydifferencePlot-1.png)<!-- -->
 
 **From the plot, we can see that weekdays generally have more steps in the morning and the weekends generally have greater steps in the afternoon and evening.**
